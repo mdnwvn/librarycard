@@ -195,7 +195,7 @@ async def unopened(ctx):
     }}, {
       '$project': {
 
-      'name': {'$toLower':"$name"},
+      'name': "$name",
       'hasread': {
         '$in': [
           ctx.author.id, "$readers.user"
