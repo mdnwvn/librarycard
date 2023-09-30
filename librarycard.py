@@ -138,7 +138,7 @@ async def listbooks(ctx):
     return
 
   pagination = Paginator(pages=pages)
-  await pagination.respond(ctx.interaction)
+  await pagination.respond(ctx.interaction, ephemeral=True)
 
 
 @bot.slash_command(name="readbook", description="Read a book and add it to your hoard")
@@ -261,10 +261,12 @@ async def hoard(ctx, user: typing.Optional[discord.Member]):
 
   userid = ctx.author.id
   username = ctx.author.name
+  ephem = True
 
   if user:
     userid = user.id
     username = user.name
+    ephem = False
 
 
   search = {
@@ -315,11 +317,11 @@ async def hoard(ctx, user: typing.Optional[discord.Member]):
     pages.append(embed)
   
   if len(pages) == 0:
-    await ctx.respond('Your hoard is lacking')
+    await ctx.respond('Your hoard is lacking', ephemeral=ephem)
     return
 
   pagination = Paginator(pages=pages)
-  await pagination.respond(ctx.interaction)
+  await pagination.respond(ctx.interaction, ephemeral=ephem)
 
 @bot.slash_command(name="leaderboard", description="See who's hoard is the biggest")
 @guild_only()
