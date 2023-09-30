@@ -46,7 +46,7 @@ async def addBook(ctx, book: str):
 
     
   document = {
-    'name': book,
+    'name': book.strip(),
     'guild': ctx.guild.id,
     'added': datetime.now(),
     'readers': []
@@ -79,7 +79,7 @@ async def delBook(ctx, book: str):
     count += 1
 
   if count < 1:
-    await ctx.respond('Book not found ')
+    await ctx.respond('Book not found')
     return
 
   if count > 1:
