@@ -143,9 +143,40 @@ async def library(ctx):
 @bot.slash_command(name="unopened", description = "List all the books you haven't read yet")
 @guild_only()
 async def unopened(ctx):
+  
 
-  count = books.count_documents({'guild': ctx.guild.id})
-  pagecount = math.ceil((count/10))
+  countpipeline = [ 
+
+    { '$match': {
+    'guild': ctx.guild.id,
+    }}, {
+      '$project': {
+
+      'name': {'$toLower':"$name"},
+      'hasread': {
+        '$in': [
+          ctx.author.id, "$readers.user"
+        ]
+      },
+      
+      }
+    },
+    {
+      '$match': {
+        'hasread': False
+      }
+    }
+
+  ]
+  
+
+  countagg = books.aggregate(countpipeline)
+
+  crp = {}
+  for l in countagg:
+    crp = l
+
+  pagecount = math.ceil((int(crp['count'])/10))
 
   pages = []
 
