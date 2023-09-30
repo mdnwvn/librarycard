@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 import math
 from discord.ext.pages import Paginator, Page
 from pymongo import TEXT
-from pymongo import ASCENDING
+from pymongo import ASCENDING, DESCENDING
 from datetime import datetime
 from discord import default_permissions
 from discord import guild_only
@@ -48,6 +48,7 @@ async def addBook(ctx, book: str):
   document = {
     'name': book,
     'guild': ctx.guild.id,
+    'added': datetime.now(),
     'readers': []
   }
   result = books.insert_one(document)
@@ -124,7 +125,7 @@ async def listbooks(ctx):
     search = {
       'guild': ctx.guild.id
     }
-    found = books.find(search).limit(10).skip((p) * 10)
+    found = books.find(search).sort(('added', DESCENDING)).limit(10).skip((p) * 10)
 
     embed = discord.Embed(title="Book listing", description= str(count) + " books in the library.")
     for b in found:
