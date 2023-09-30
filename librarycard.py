@@ -112,9 +112,9 @@ async def delBookById(ctx, id: str):
   else:
     await ctx.respond('Book not deleted')
 
-@bot.slash_command(name="listbooks", description = "List all the book in your Flight's library")
+@bot.slash_command(name="library", description = "List all the book in your Flight's library")
 @guild_only()
-async def listbooks(ctx):
+async def library(ctx):
 
   count = books.count_documents({'guild': ctx.guild.id})
   pagecount = math.ceil((count/10))
