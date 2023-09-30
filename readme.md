@@ -12,9 +12,14 @@ Wow thats a lot of keywords
 - Discord Bot Token
 
 ### Setup
+0. Clone the repo into `/opt/librarycard` (No Windows instructions in this lair)
 1. Copy `.example.env` into `.env`
 2. Configure your Discord token and MongoDB connection string
-3. Run `librarycard.py`
+3. 
+    - Run `librarycard.py` OR:
+    - Create a `librarycard` user account
+    - Install the Unit file into `/etc/systemd/system/librarycard.service`
+    - Enable and start with `systemctl enable --now librarycard`
 4. ????
 5. Profit
 

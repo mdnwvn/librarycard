@@ -1,0 +1,11 @@
+[Unit]
+Description=librarycard
+[Service]
+User=librarycard
+Group=librarycard
+ExecStart=/bin/sh -c 'python3 /opt/librarycard/librarycard.py'
+Type=simple
+Restart=on-failure
+RestartSec=10
+[Install]
+WantedBy=multi-user.target
