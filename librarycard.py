@@ -192,7 +192,13 @@ async def unopened(ctx):
 
     { '$match': {
     'guild': ctx.guild.id,
-    }}, {
+    }}, 
+    {
+        '$sort': {
+          'added': -1
+        }
+      },
+      {
       '$project': {
 
       'name': "$name",
@@ -208,11 +214,7 @@ async def unopened(ctx):
       '$match': {
         'hasread': False
       }
-    },{
-        '$sort': {
-          'added': -1
-        }
-      },
+    },
       {
         '$skip': p * 10
       },
