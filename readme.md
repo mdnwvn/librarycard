@@ -26,8 +26,8 @@ Wow thats a lot of keywords
 ### Actually Using It
 
 `manage-messages` permission is needed for:
-  - `/addbook` to add your first book to the library. Book title required.
-  - `/delbook` to destroy a book to the library. Book title required.
+- `/addbook` to add your first book to the library. Book title required.
+- `/delbook` to destroy a book to the library. Book title required.
   
 Everyone can:
 - `/library` to list everything in your Flight's library  
@@ -35,6 +35,7 @@ Everyone can:
 - `/hoard [user: optional]` to view your hoard or another's.  
 - `/readbook` to read a book in the library and add it to your hoard  
 - `/forgetbook` to forget a book and remove it from your hoard  
+- `/unopened` to check out what you haven't read yet
 
 
 ***
