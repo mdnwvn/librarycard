@@ -30,7 +30,7 @@ Wow thats a lot of keywords
   - `/delbook` to destroy a book to the library. Book title required.
   
 Everyone can:
-- `/listbooks` to list everything in your Flight's library  
+- `/library` to list everything in your Flight's library  
 - `/leaderboard` to see who's hoard is largest  
 - `/hoard [user: optional]` to view your hoard or another's.  
 - `/readbook` to read a book in the library and add it to your hoard  
