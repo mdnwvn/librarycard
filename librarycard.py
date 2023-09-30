@@ -349,6 +349,11 @@ async def hoard(ctx, user: typing.Optional[discord.Member]):
         }
       }, 
       {
+        '$sort': {
+          'readers.read': -1
+        }
+      },
+      {
         '$skip': p * 10
       },
       {

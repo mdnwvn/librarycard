@@ -1,4 +1,4 @@
-# Library Card 2.2.0
+# Library Card 2.2.1
 
 ## A dragon-themed discord group reading completion tracker
 Wow thats a lot of keywords
