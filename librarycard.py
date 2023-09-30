@@ -284,7 +284,7 @@ async def forgetBook(ctx, book:str):
     await ctx.respond(embed=embed)
     return
 
-  search = { '_id': foundbook['_id'],'guild': ctx.guild.id,}
+  search = { '_id': existingbook['_id'],'guild': ctx.guild.id,}
   update = {
           '$pull': {
             'readers': {
