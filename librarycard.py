@@ -165,6 +165,13 @@ async def unopened(ctx):
       '$match': {
         'hasread': False
       }
+    }, {
+        '$group': {
+            '_id': 'counter', 
+            'count': {
+                '$count': {}
+            }
+        }
     }
 
   ]
@@ -247,7 +254,16 @@ async def readBook(ctx, book: str):
       '$match': {
         'name': book.lower()
       }
-    }
+    }, 
+      {
+          '$group': {
+              '_id': '$user', 
+              'count': {
+                  '$count': {}
+              }
+          }
+      },
+      {'$count': 'count'}
 
   ]
 
