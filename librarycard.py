@@ -243,18 +243,34 @@ async def readBook(ctx, book: str):
 @bot.slash_command(name="forgetbook", description="Forget about a book and remove it from your hoard")
 @guild_only()
 async def forgetBook(ctx, book:str):
-  existingsearch = {
-    'name':book,
-    'readers.user': ctx.author.id,
+  existingsearchpipeline = [ 
+    { '$match': {
     'guild': ctx.guild.id,
-  }
-  foundexisting = books.find(existingsearch)
+    'readers.user': ctx.author.id,
+    }}, {
+      '$project': {
+
+      'name': {'$toLower':"$name"},
+      
+      }
+    },
+    {
+      '$match': {
+        'name': book.lower()
+      }
+    }
+
+  ]
+
+  foundexisting = books.aggregate(existingsearchpipeline)
 
   existing = []
+  existingbook = {}
 
   existingcount = 0
   for d in foundexisting:
     existing.append(d)
+    existingbook = d
     existingcount += 1
   
   if existingcount == 0:
@@ -268,7 +284,7 @@ async def forgetBook(ctx, book:str):
     await ctx.respond(embed=embed)
     return
 
-  search = { 'name': book,'guild': ctx.guild.id,}
+  search = { '_id': foundbook['_id'],'guild': ctx.guild.id,}
   update = {
           '$pull': {
             'readers': {
