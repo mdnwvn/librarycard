@@ -223,7 +223,7 @@ async def unopened(ctx):
   ]
     found = books.aggregate(searchPipeline)
 
-    embed = discord.Embed(title="Book listing", description= str(count) + " books left.")
+    embed = discord.Embed(title="Book listing", description= str(crp['count']) + " books left.")
     for b in found:
       embed.add_field(name=b['name'], value='', inline=False)
     
