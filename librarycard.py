@@ -125,7 +125,7 @@ async def listbooks(ctx):
     search = {
       'guild': ctx.guild.id
     }
-    found = books.find(search).sort(('added', DESCENDING)).limit(10).skip((p) * 10)
+    found = books.find(search).sort([('added', DESCENDING)]).limit(10).skip((p) * 10)
 
     embed = discord.Embed(title="Book listing", description= str(count) + " books in the library.")
     for b in found:
