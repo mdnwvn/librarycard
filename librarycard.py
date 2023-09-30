@@ -260,9 +260,12 @@ async def forgetBook(ctx, book:str):
 async def hoard(ctx, user: typing.Optional[discord.Member]):
 
   userid = ctx.author.id
+  username = ctx.author.name
 
   if user:
     userid = user.id
+    username = user.name
+
 
   search = {
       'guild': ctx.guild.id,
@@ -305,7 +308,7 @@ async def hoard(ctx, user: typing.Optional[discord.Member]):
     ]
     found = books.aggregate(pipeline)
 
-    embed = discord.Embed(title="Book listing", description= str(count) + " books in " + ctx.author.name + "'s hoard." )
+    embed = discord.Embed(title="Book listing", description= str(count) + " books in " + username + "'s hoard." )
     for b in found:
       embed.add_field(name=b['name'], value='Hoarded ' + str(b['readers']['read'].date()) , inline=False)
     
