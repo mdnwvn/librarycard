@@ -163,7 +163,7 @@ async def readBook(ctx, book: str):
     count += 1
 
   if count < 1:
-    await ctx.respond('Book not found')
+    await ctx.respond('Book not found', ephemeral=True)
     return
 
   if count > 1:
@@ -188,7 +188,7 @@ async def readBook(ctx, book: str):
     existingcount += 1
   
   if existingcount > 0:
-    await ctx.respond('Already hoarded this book')
+    await ctx.respond('Already hoarded this book', ephemeral=True)
     return
 
   readerobject = {

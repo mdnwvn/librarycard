@@ -1,4 +1,4 @@
-# Library Card 1.1.4b
+# Library Card 1.1.5b
 
 ## A dragon-themed discord group reading completion tracker
 Wow thats a lot of keywords
@@ -30,11 +30,11 @@ Wow thats a lot of keywords
   - `/delbook` to destroy a book to the library. Book title required.
   
 Everyone can:
-  - `/listbooks` to list everything in your Flight's library
-  - `/leaderboard` to see who's hoard is largest
-  - `/hoard` to view your hoard, optionally supply another user to view theirs.
-  - `/readbook` to read a book in the library and add it to your hoard
-  - `/forgetbook` to forget a book and remove it from your hoard
+- `/listbooks` to list everything in your Flight's library  
+- `/leaderboard` to see who's hoard is largest  
+- `/hoard [user: optional]` to view your hoard or another's.  
+- `/readbook` to read a book in the library and add it to your hoard  
+- `/forgetbook` to forget a book and remove it from your hoard  
 
 
 ***
