@@ -32,7 +32,7 @@ bot = discord.Bot()
 async def addBook(ctx, book: str):
 
   search = {
-    '$text': {'$search': book},
+    name: book,
     'guild': ctx.guild.id,
   }
   found = books.find(search).limit(10)
@@ -63,7 +63,7 @@ async def addBook(ctx, book: str):
 async def delBook(ctx, book: str):
 
   search = {
-    '$text': {'$search': book},
+    'name': book,
     'guild': ctx.guild.id,
   }
   projection ={
@@ -147,7 +147,7 @@ async def readBook(ctx, book: str):
   print (ctx.author.id)
 
   search = {
-    '$text': {'$search': book},
+    'name': book,
     'guild': ctx.guild.id,
   }
   projection ={
@@ -176,7 +176,7 @@ async def readBook(ctx, book: str):
     return
 
   existingsearch = {
-    '$text': {'$search': book},
+    'name': book,
     'readers.user': ctx.author.id,
     'guild': ctx.guild.id,
   }
@@ -212,7 +212,7 @@ async def readBook(ctx, book: str):
 @guild_only()
 async def forgetBook(ctx, book:str):
   existingsearch = {
-    '$text': {'$search': book},
+    'name':book,
     'readers.user': ctx.author.id,
     'guild': ctx.guild.id,
   }
@@ -236,7 +236,7 @@ async def forgetBook(ctx, book:str):
     await ctx.respond(embed=embed)
     return
 
-  search = { '$text': {'$search': book},'guild': ctx.guild.id,}
+  search = { 'name': book,'guild': ctx.guild.id,}
   update = {
           '$pull': {
             'readers': {
