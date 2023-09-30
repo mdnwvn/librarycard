@@ -32,7 +32,7 @@ bot = discord.Bot()
 async def addBook(ctx, book: str):
 
   search = {
-    name: book,
+    'name': book,
     'guild': ctx.guild.id,
   }
   found = books.find(search).limit(10)
@@ -144,22 +144,33 @@ async def library(ctx):
 @bot.slash_command(name="readbook", description="Read a book and add it to your hoard")
 @guild_only()
 async def readBook(ctx, book: str):
-  print (ctx.author.id)
-
-  search = {
-    'name': book,
+  searchpipeline = [ 
+    { '$match': {
     'guild': ctx.guild.id,
-  }
-  projection ={
-    'readers': 0
-  }
-  found = books.find(search, projection)
+    }}, {
+      '$project': {
+
+      'name': {'$toLower':"$name"},
+      
+      }
+    },
+    {
+      '$match': {
+        'name': book.lower()
+      }
+    }
+
+  ]
+
+  found = books.aggregate(searchpipeline)
 
   foundBooks = []
+  foundbook = {}
 
   count = 0
   for d in found:
     foundBooks.append(d)
+    foundbook = d
     count += 1
 
   if count < 1:
@@ -175,13 +186,29 @@ async def readBook(ctx, book: str):
     await ctx.respond(embed=embed)
     return
 
-  existingsearch = {
-    'name': book,
-    'readers.user': ctx.author.id,
-    'guild': ctx.guild.id,
-  }
 
-  foundexisting = books.find(existingsearch)
+  existingsearchpipeline = [ 
+    { '$match': {
+    'guild': ctx.guild.id,
+    'readers.user': ctx.author.id,
+    }}, {
+      '$project': {
+
+      'name': {'$toLower':"$name"},
+      
+      }
+    },
+    {
+      '$match': {
+        'name': book.lower()
+      }
+    }
+
+  ]
+
+  foundexisting = books.aggregate(existingsearchpipeline)
+
+  
 
   existingcount = 0
   for d in foundexisting:
@@ -190,6 +217,11 @@ async def readBook(ctx, book: str):
   if existingcount > 0:
     await ctx.respond('Already hoarded this book', ephemeral=True)
     return
+
+  search = {
+    '_id': foundbook['_id'],
+    'guild': ctx.guild.id,
+  }
 
   readerobject = {
     'read': datetime.now(),
