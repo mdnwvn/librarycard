@@ -140,6 +140,64 @@ async def library(ctx):
   pagination = Paginator(pages=pages)
   await pagination.respond(ctx.interaction, ephemeral=True)
 
+@bot.slash_command(name="unopened", description = "List all the books you haven't read yet")
+@guild_only()
+async def unopened(ctx):
+
+  count = books.count_documents({'guild': ctx.guild.id})
+  pagecount = math.ceil((count/10))
+
+  pages = []
+
+  for p in range(pagecount):
+    searchPipeline = [ 
+
+    { '$match': {
+    'guild': ctx.guild.id,
+    }}, {
+      '$project': {
+
+      'name': {'$toLower':"$name"},
+      'hasread': {
+        '$in': [
+          ctx.author.id, "$readers.user"
+        ]
+      },
+      
+      }
+    },
+    {
+      '$match': {
+        'hasread': False
+      }
+    },{
+        '$sort': {
+          'added': -1
+        }
+      },
+      {
+        '$skip': p * 10
+      },
+      {
+        '$limit' : 10
+      }
+
+  ]
+    found = books.aggregate(searchPipeline)
+
+    embed = discord.Embed(title="Book listing", description= str(count) + " books left.")
+    for b in found:
+      embed.add_field(name=b['name'], value='', inline=False)
+    
+    pages.append(embed)
+  
+  if len(pages) == 0:
+    await ctx.respond('You\'ve read it all')
+    return
+
+  pagination = Paginator(pages=pages)
+  await pagination.respond(ctx.interaction, ephemeral=True)
+
 
 @bot.slash_command(name="readbook", description="Read a book and add it to your hoard")
 @guild_only()
