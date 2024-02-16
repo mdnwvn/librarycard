@@ -1,6 +1,6 @@
-# Library Card 2.3.6
+# Library Card 3.0.0
 
-## A dragon-themed discord group reading completion tracker
+## A dragon-themed discord group reading completion and suggestion tracker
 Wow thats a lot of keywords
 
 
@@ -28,6 +28,10 @@ Wow thats a lot of keywords
 `manage-messages` permission is needed for:
 - `/addbook` to add your first book to the library. Book title required.
 - `/delbook` to destroy a book to the library. Book title required.
+
+- `/start-session` to start a reading session.
+- `/end-session` to end a reading session.
+- `/draw-nominees` to select the nominees from the current reading session that have at least the required nomination count. Minimum of nominations required.
   
 Everyone can:
 - `/library` to list everything in your Flight's library  
@@ -37,7 +41,9 @@ Everyone can:
 - `/forgetbook` to forget a book and remove it from your hoard  
 - `/unopened` to check out what you haven't read yet
 
+- `/nominate` to nominates a book to the current active reading session. Book title required.
+- `/list-nominations` to list all nominated books for the current active session by all users.
 
 ***
 
-Its not a perfect bot, given I wrote it in an afternoon, but it should be functional.
+Its not a perfect bot, given it was originally written in an afternoon, but it should be functional.

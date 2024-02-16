@@ -22,9 +22,15 @@ books.create_index([('name', TEXT)])
 books.create_index([('guild', ASCENDING)])
 books.create_index([('readers.user', ASCENDING)])
 
+nominateSessions = client.librarycard.nominateSessions
+
+nominateSessions.create_index([('guild', ASCENDING)])
+nominateSessions.create_index([('nominations.name', ASCENDING)])
+
 intents = discord.Intents.default()
 intents.message_content = True
 bot = discord.Bot()
+
 
 @bot.slash_command(name="addbook", description = "Add a book to your Flight's library")
 @guild_only()
@@ -540,5 +546,270 @@ async def leaderboard(ctx):
 
   pagination = Paginator(pages=pages)
   await pagination.respond(ctx.interaction)
+
+@bot.slash_command(name="start-session", description = "Starts a new reading session for your Flight")
+@guild_only()
+@default_permissions(manage_messages=True)
+async def startSession(ctx):
+  search = {
+    'guild': ctx.guild.id,
+    'ended': {'$exists': False}
+  }
+
+  # Caps so the server can only have one active session at a time.
+  found = nominateSessions.count_documents(search, limit=1)
+  if(found != 0):
+    await ctx.respond('Your flight already have an active reading session.')
+    return
+  
+  document = {
+  'guild': ctx.guild.id,
+  'added': datetime.now(),
+  'user': ctx.author.id,
+  'nominations': []
+  }
+  result = nominateSessions.insert_one(document)
+  if (result.inserted_id): 
+    await ctx.respond(f'<@{ctx.author.id}> started a new reading session.')
+  else:
+    await ctx.respond('Failed to start reading session')
+
+@bot.slash_command(name="end-session", description = "Ends the current reading session for your Flight")
+@guild_only()
+@default_permissions(manage_messages=True)
+async def endSession(ctx):
+  search = {
+    'guild': ctx.guild.id,
+    'ended': {'$exists': False}
+  }
+
+  # Caps so the server can only have one active session at a time.
+  found = nominateSessions.count_documents(search, limit=1)
+  if(found == 0):
+    await ctx.respond('Your flight doesn\'t have an active reading session.')
+    return
+    
+  result = nominateSessions.update_one(search, {
+    '$set': {
+      'ended': datetime.now(),
+      'endedUser': ctx.author.id
+    }
+  })
+
+  if result.acknowledged:
+    await ctx.respond('The current session has ended')
+  else: 
+    await ctx.respond('Failed to end the current session')
+
+@bot.slash_command(name="nominate", description = "Nominate a book to your Flight's reading session")
+@guild_only()
+async def addNomination(ctx, book: str):
+  book = str.strip(book)
+  search = {
+    'guild': ctx.guild.id,
+    'ended': {'$exists': False}
+  }
+
+  # Caps so the server can only have one active session at a time.
+  found = nominateSessions.count_documents(search, limit=1)
+  if(found == 0):
+    await ctx.respond('Your flight doesn\'t have an active reading session.')
+    return
+  
+  existingsearchpipeline = [ 
+    { 
+      '$match': {
+          'guild': ctx.guild.id,
+          'nominations.user': ctx.author.id,
+          'ended': {'$exists': False}
+      }
+    }, 
+    {
+      '$project': {
+        'nominations':  {'$map': {'input': '$nominations',  'in': { '$toLower': '$$this.name'}}}
+      }
+    },
+    {
+      '$match': {
+        'nominations': book.lower()
+      }
+    }
+  ]
+
+  foundexisting = nominateSessions.aggregate(existingsearchpipeline)
+  existingcount = 0
+  for d in foundexisting:
+    existingcount += 1
+  
+  if existingcount > 0:
+    await ctx.respond('Already nominated this book', ephemeral=True)
+    return
+  
+  foundSession = nominateSessions.find_one(search)
+  search = {
+    '_id': foundSession['_id'],
+    'guild': ctx.guild.id,
+  }
+  
+  readerobject = {
+    'nominated': datetime.now(),
+    'name': book,
+    'user': ctx.author.id
+  }
+  result = nominateSessions.update_one(search, {
+    '$push': {
+      'nominations': readerobject
+    }
+  })
+
+  if result.acknowledged:
+    await ctx.respond(f'{book} nominated!')
+  else: 
+    await ctx.respond('Book could not be nominated')
+
+@bot.slash_command(name="draw-nominees", description = "List all the book in your Flight's library")
+@guild_only()
+@default_permissions(manage_messages=True)
+async def drawNominees(ctx, min_nominations: int):
+
+  search = [
+    {
+        '$match': {
+            'guild': ctx.guild.id
+        }
+    }, {
+        '$sort': {
+            'added': -1
+        }
+    }, {
+        '$limit': 1
+    }, {
+        '$unwind': {
+            'path': '$nominations'
+        }
+    }, {
+        '$replaceRoot': {
+            'newRoot': '$nominations'
+        }
+    }, {
+        '$sortByCount': {
+            '$toLower': '$name'
+        }
+    }, {
+        '$match': {
+            'count': {
+                '$gt': min_nominations - 1
+            }
+        }
+    }
+  ]
+
+  found = nominateSessions.aggregate(search)
+
+  embed = discord.Embed(title="Book Nominees", description="Here are the chosen books with at least {} nominations".format(min_nominations))
+  itemList = ""
+  bookCount = 1
+  for b in found:
+    itemList += "\n{}. {} ({})".format(bookCount, pascal_case(b['_id']), b['count'])
+    bookCount += 1
+
+  embed.add_field(name="Nominees", value=itemList, inline=False)
+
+  await ctx.respond(embed=embed, ephemeral=True)
+
+@bot.slash_command(name="list-nominations", description="Lists all nomination for the current active session")
+@guild_only()
+async def listNominations(ctx):
+
+  search_count = [
+    {
+        '$match': {
+            'guild': ctx.guild.id
+        }
+    }, {
+        '$sort': {
+            'added': -1
+        }
+    }, {
+        '$limit': 1
+    }, {
+        '$unwind': {
+            'path': '$nominations'
+        }
+    }, {
+        '$replaceRoot': {
+            'newRoot': '$nominations'
+        }
+    }, {
+        '$sortByCount': {
+            '$toLower': '$name'
+        }
+    }, {
+        '$count': 'Total'
+    }
+  ]
+
+  search = [
+    {
+        '$match': {
+            'guild': ctx.guild.id
+        }
+    }, {
+        '$sort': {
+            'added': -1
+        }
+    }, {
+        '$limit': 1
+    }, {
+        '$unwind': {
+            'path': '$nominations'
+        }
+    }, {
+        '$replaceRoot': {
+            'newRoot': '$nominations'
+        }
+    }, {
+        '$sortByCount': {
+            '$toLower': '$name'
+        }
+    }
+  ]
+
+  found_count = nominateSessions.aggregate(search_count)
+  count = 0
+  for b in found_count:
+    count = b['Total']
+
+  found = nominateSessions.aggregate(search)
+
+  pagecount = math.ceil((count/10))
+
+  pages = []
+
+  for p in range(pagecount):
+    embed = discord.Embed(title="Book Nomination", description= str(count) + " books currently nominated" )
+    itemList = ""
+    bookCount = 1
+
+    for b in found:
+      itemList += "\n{}. {}".format(bookCount, pascal_case(str(b['_id'])))
+      bookCount += 1
+      
+    embed.add_field(name='Current Nominated Books', value=itemList, inline=False)
+
+    pages.append(embed)
+  
+  if len(pages) == 0:
+    await ctx.respond('No books nominated yet', ephemeral=True)
+    return
+
+  pagination = Paginator(pages=pages)
+  await pagination.respond(ctx.interaction, ephemeral=True)
+
+
+def pascal_case(input_str):
+    words = input_str.split()
+    capitalized_words = [word.capitalize() for word in words]
+    return ' '.join(capitalized_words)
 
 bot.run(os.getenv('TOKEN'))
