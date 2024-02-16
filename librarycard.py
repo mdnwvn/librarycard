@@ -812,4 +812,8 @@ def pascal_case(input_str):
     capitalized_words = [word.capitalize() for word in words]
     return ' '.join(capitalized_words)
 
+
+@bot.event
+async def on_ready():
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="dragons!"))
 bot.run(os.getenv('TOKEN'))
