@@ -695,7 +695,7 @@ async def addNomination(ctx, book: str):
   else: 
     await ctx.respond('Book could not be nominated')
 
-@bot.slash_command(name="draw-nominees", description = "List all the book in your Flight's library", guild_ids = [189601545950724096])
+@bot.slash_command(name="draw-nominees", description = "List all the book in your Flight's library")
 @guild_only()
 @default_permissions(manage_messages=True)
 async def drawNominees(
@@ -748,7 +748,7 @@ async def drawNominees(
 
   await ctx.respond(embed=embed, ephemeral=True)
 
-@bot.slash_command(name="list-nominations", description="Lists all nomination for the current active session", guild_ids = [189601545950724096])
+@bot.slash_command(name="list-nominations", description="Lists all nomination for the current active session")
 @guild_only()
 async def listNominations(ctx, past_sessions: Option(int, "How many prior sessions should be considered in the search.", min_value=0, max_value=5, default=0)):
 
