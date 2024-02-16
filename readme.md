@@ -1,4 +1,4 @@
-# Library Card 3.0.2
+# Library Card 3.1.0
 
 ## A dragon-themed discord group reading completion and suggestion tracker
 Wow thats a lot of keywords
