@@ -24,7 +24,6 @@ books.create_index([('readers.user', ASCENDING)])
 
 nominateSessions = client.librarycard.nominateSessions
 
-# nominateSessions.create_index([('name', TEXT)])
 nominateSessions.create_index([('guild', ASCENDING)])
 nominateSessions.create_index([('nominations.name', ASCENDING)])
 
@@ -559,7 +558,7 @@ async def startSession(ctx):
 
   # Caps so the server can only have one active session at a time.
   found = nominateSessions.count_documents(search, limit=1)
-  if(found == 1):
+  if(found != 0):
     await ctx.respond('Your flight already have an active reading session.')
     return
   
@@ -713,8 +712,7 @@ async def drawNominees(ctx, min_nominations: int):
   for b in found:
     itemList += "\n{}. {} ({})".format(bookCount, pascal_case(b['_id']), b['count'])
     bookCount += 1
-    # embed.add_field(name=b['name'], value='Readers: ' + str(len(b['readers'])), inline=False)
-  
+
   embed.add_field(name="Nominees", value=itemList, inline=False)
 
   await ctx.respond(embed=embed, ephemeral=True)
