@@ -1,4 +1,4 @@
-# Library Card 3.0.1
+# Library Card 3.0.2
 
 ## A dragon-themed discord group reading completion and suggestion tracker
 Wow thats a lot of keywords
@@ -31,7 +31,7 @@ Wow thats a lot of keywords
 
 - `/start-session` to start a reading session.
 - `/end-session` to end a reading session.
-- `/draw-nominees` to select the nominees from the current reading session that have at least the required nomination count. Minimum of nominations required.
+- `/draw-nominees [min_nominations: optional (default 2), [past_sessions: optional (default 0)` to select the nominees from the current reading session that have at least the required nomination count. min_nominations will always consider 2 or more (number informed by the user). Use past_sessions to include nominations from previous sessions.
   
 Everyone can:
 - `/library` to list everything in your Flight's library  
@@ -42,7 +42,7 @@ Everyone can:
 - `/unopened` to check out what you haven't read yet
 
 - `/nominate` to nominates a book to the current active reading session. Book title required.
-- `/list-nominations` to list all nominated books for the current active session by all users.
+- `/list-nominations [past_sessions: optional (default 0)]` to list all nominated books for the current active session by all users. Use past_sessions to include nominations from previous sessions.
 
 ***
 

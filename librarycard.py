@@ -9,7 +9,7 @@ from discord.ext.pages import Paginator, Page
 from pymongo import TEXT
 from pymongo import ASCENDING, DESCENDING
 from datetime import datetime
-from discord import default_permissions
+from discord import Option, default_permissions
 from discord import guild_only
 
 
@@ -604,7 +604,7 @@ async def endSession(ctx):
 @bot.slash_command(name="nominate", description = "Nominate a book to your Flight's reading session")
 @guild_only()
 async def addNomination(ctx, book: str):
-  book = str.strip(book)
+  book = pascal_case(str.strip(book))
   search = {
     'guild': ctx.guild.id,
     'ended': {'$exists': False}
@@ -616,7 +616,7 @@ async def addNomination(ctx, book: str):
     await ctx.respond('Your flight doesn\'t have an active reading session.')
     return
   
-  existingsearchpipeline = [ 
+  existingNominationSearchPipeline = [ 
     { 
       '$match': {
           'guild': ctx.guild.id,
@@ -636,13 +636,41 @@ async def addNomination(ctx, book: str):
     }
   ]
 
-  foundexisting = nominateSessions.aggregate(existingsearchpipeline)
-  existingcount = 0
-  for d in foundexisting:
-    existingcount += 1
+  foundExistingNomination = nominateSessions.aggregate(existingNominationSearchPipeline)
+  existingNominationCount = 0
+  for d in foundExistingNomination:
+    existingNominationCount += 1
   
-  if existingcount > 0:
-    await ctx.respond('Already nominated this book', ephemeral=True)
+  if existingNominationCount > 0:
+    await ctx.respond(f'You already nominated {book}', ephemeral=True)
+    return
+  
+  existingBookSearchPipeline = [
+    {
+        '$match': {
+            'guild': ctx.guild.id
+        }
+    }, {
+        '$project': {
+            '_id': False, 
+            'name': {
+                '$toLower': '$name'
+            }
+        }
+    }, {
+        '$match': {
+            'name': book.lower()
+        }
+    }
+]
+
+  foundExistingBooks = books.aggregate(existingBookSearchPipeline)
+  existingBookCount = 0
+  for d in foundExistingBooks:
+    existingBookCount += 1
+  
+  if existingBookCount > 0:
+    await ctx.respond(f'{book} cannot be nominated for it was already chosen by the club.', ephemeral=True)
     return
   
   foundSession = nominateSessions.find_one(search)
@@ -667,10 +695,13 @@ async def addNomination(ctx, book: str):
   else: 
     await ctx.respond('Book could not be nominated')
 
-@bot.slash_command(name="draw-nominees", description = "List all the book in your Flight's library")
+@bot.slash_command(name="draw-nominees", description = "List all the book in your Flight's library", guild_ids = [189601545950724096])
 @guild_only()
 @default_permissions(manage_messages=True)
-async def drawNominees(ctx, min_nominations: int):
+async def drawNominees(
+  ctx, 
+  min_nominations: Option(int, "Minimum of times the book received a nomination in the session search period.", min_value=2, default=2),
+  past_sessions: Option(int, "How many prior sessions should be considered in the search.", min_value=0, default=0)):
 
   search = [
     {
@@ -682,7 +713,7 @@ async def drawNominees(ctx, min_nominations: int):
             'added': -1
         }
     }, {
-        '$limit': 1
+        '$limit': past_sessions + 1
     }, {
         '$unwind': {
             'path': '$nominations'
@@ -717,9 +748,9 @@ async def drawNominees(ctx, min_nominations: int):
 
   await ctx.respond(embed=embed, ephemeral=True)
 
-@bot.slash_command(name="list-nominations", description="Lists all nomination for the current active session")
+@bot.slash_command(name="list-nominations", description="Lists all nomination for the current active session", guild_ids = [189601545950724096])
 @guild_only()
-async def listNominations(ctx):
+async def listNominations(ctx, past_sessions: Option(int, "How many prior sessions should be considered in the search.", min_value=0, max_value=5, default=0)):
 
   search_count = [
     {
@@ -731,7 +762,7 @@ async def listNominations(ctx):
             'added': -1
         }
     }, {
-        '$limit': 1
+        '$limit': past_sessions + 1
     }, {
         '$unwind': {
             'path': '$nominations'
@@ -759,7 +790,7 @@ async def listNominations(ctx):
             'added': -1
         }
     }, {
-        '$limit': 1
+        '$limit': past_sessions + 1
     }, {
         '$unwind': {
             'path': '$nominations'
@@ -771,6 +802,10 @@ async def listNominations(ctx):
     }, {
         '$sortByCount': {
             '$toLower': '$name'
+        }
+    }, {
+      '$sort': {
+            '_id': 1
         }
     }
   ]
