@@ -1,6 +1,6 @@
-# Library Card 2.3.6
+# Library Card 3.0.0
 
-## A dragon-themed discord group reading completion tracker
+## A dragon-themed discord group reading completion and suggestion tracker
 Wow thats a lot of keywords
 
 
@@ -46,4 +46,4 @@ Everyone can:
 
 ***
 
-Its not a perfect bot, given I wrote it in an afternoon, but it should be functional.
+Its not a perfect bot, given it was originally written in an afternoon, but it should be functional.
