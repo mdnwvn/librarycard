@@ -616,23 +616,35 @@ async def addNomination(ctx, book: str):
     await ctx.respond('Your flight doesn\'t have an active reading session.')
     return
   
-  existingNominationSearchPipeline = [ 
-    { 
-      '$match': {
-          'guild': ctx.guild.id,
-          'nominations.user': ctx.author.id,
-          'ended': {'$exists': False}
-      }
-    }, 
+  existingNominationSearchPipeline = [
     {
-      '$project': {
-        'nominations':  {'$map': {'input': '$nominations',  'in': { '$toLower': '$$this.name'}}}
-      }
-    },
-    {
-      '$match': {
-        'nominations': book.lower()
-      }
+        '$match': {
+            'guild': ctx.guild.id, 
+            'ended': {
+                '$exists': False
+            }
+        }
+    }, {
+        '$unwind': '$nominations'
+    }, {
+        '$replaceRoot': {
+            'newRoot': '$nominations'
+        }
+    }, {
+        '$project': {
+            'name': {
+                '$toLower': '$name'
+            }, 
+            'user': True
+        }
+    }, {
+        '$match': {
+            'user': ctx.author.id
+        }
+    }, {
+        '$match': {
+            'name': book.lower()
+        }
     }
   ]
 
