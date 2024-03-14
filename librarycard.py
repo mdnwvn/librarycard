@@ -1,5 +1,5 @@
 import discord
-import goodreads_scrap
+import lib.goodreads as goodreads
 import os
 from dotenv import load_dotenv
 import typing
@@ -854,7 +854,7 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
   await pagination.respond(ctx.interaction, ephemeral=True)
 
 def getBook(book_url):    
-    book = goodreads_scrap.getBook(book_url)
+    book = goodreads.getBook(book_url)
     if not book:
         return;
     
