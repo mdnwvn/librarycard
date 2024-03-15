@@ -12,6 +12,7 @@ from pymongo import ASCENDING, DESCENDING
 from datetime import datetime
 from discord import Option, default_permissions
 from discord import guild_only
+import asyncio
 
 
 load_dotenv()
@@ -853,8 +854,9 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
   pagination = Paginator(pages=pages)
   await pagination.respond(ctx.interaction, ephemeral=True)
 
-def getBook(book_url):    
-    book = goodreads.getBook(book_url)
+async def getBook(book_url):    
+    print ('finding book')
+    book = await goodreads.getBook(book_url)
     if not book:
         return;
     
@@ -902,8 +904,11 @@ async def on_message(message: discord.message):
         return
 
     if message.content.startswith(("https://www.goodreads.com/book/show/", "https://goodreads.com/book/show/")) :
+        
         book_url = message.content.split()[0]
-        embed = getBook(book_url)
+
+        embed = await getBook(book_url)
+
         
         if embed:
             await message.channel.send(embed=embed, reference=message.to_reference())
