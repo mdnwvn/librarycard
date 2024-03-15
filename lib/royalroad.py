@@ -63,7 +63,7 @@ async def getBook(book_url):
             # get book author
             book.author = html_soup.find("meta", attrs={"property": "books:author"})["content"]
             book.author_link = "https://www.royalroad.com" + title_node.find("a")["href"]
-            book.author_img = html_soup.find("div", attrs={"class": "portlet-body"}).find("img")["src"]
+            book.author_img = "https://www.royalroad.com" + html_soup.find("div", attrs={"class": "portlet-body"}).find("img")["src"]
             
             # get tag list
             book_tags_list = fiction_info_node.find("span", attrs={"class": "tags"})
