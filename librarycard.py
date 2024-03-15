@@ -1,5 +1,6 @@
 import discord
 import lib.goodreads as goodreads
+import lib.royalroad as royalroad
 import os
 from dotenv import load_dotenv
 import typing
@@ -853,7 +854,7 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
   pagination = Paginator(pages=pages)
   await pagination.respond(ctx.interaction, ephemeral=True)
 
-async def getBook(book_url):
+async def getGoodreadsBook(book_url):
     book = await goodreads.getBook(book_url)
     if not book:
         return;
@@ -869,9 +870,10 @@ async def getBook(book_url):
         embed.add_field(name="Series", value="[{}]({})".format(book.series, book.series_link), inline=False)    
     
     embed.add_field(name="Title", value="[{}]({})".format(book.title, book_url), inline=False)
-    embed.add_field(name="Author(s)", value=formatAuthor(book.authors), inline=True)
+    embed.add_field(name="Author(s)", value=formatBookItemList(book.authors), inline=True)
     embed.add_field(name="Rating", value= ":star: " + book.rating, inline=True)
-    # embed.add_field(name="Inline Field 3", value="Inline Field 3", inline=True)
+    
+    
  
     # embed.set_footer(text="The Awesome Lu Parser :3") # footers can have icons too
     embed.set_author(name="Goodreads / Library Card", icon_url="https://www.goodreads.com/favicon.ico")
@@ -880,16 +882,47 @@ async def getBook(book_url):
 
     return embed # Send the embed with some text
 
+async def getRoyalRoadBook(book_url):
+    book = await royalroad.getBook(book_url)
+    if not book:
+        return;
+    
+    embed = discord.Embed(
+        title=book.full_title,
+        url=book_url,
+        description=book.description,
+        color=discord.Colour.blurple(), # Pycord provides a class with default colors you can choose from
+    )
+    
+    embed.add_field(name="Title", value="[{}]({})".format(book.title, book_url), inline=False)
+    embed.add_field(name="Tags(s)", value=formatBookItemList(book.tags), inline=False)
+    
+    embed.add_field(name="Author", value="[{}]({})".format(book.author, book.author_link), inline=True)
+    embed.add_field(name="Rating", value= ":star: " + book.rating[:3], inline=True)
+    embed.add_field(name="Pages", value=book.page_count, inline=True)
+    
+    embed.add_field(name="Chapters", value=book.chapter_count, inline=True)
+    embed.add_field(name="Followers", value=book.followers, inline=True)
+    embed.add_field(name="Favorites", value=book.favorites, inline=True)
+    
+    # embed.set_footer(text="The Awesome Lu Parser :3") # footers can have icons too
+    embed.set_author(name="Royal Road / Library Card", icon_url="https://www.royalroad.com/icons/favicon-32x32.png")
+    # embed.set_thumbnail(url="https://example.com/link-to-my-thumbnail.png")
+    embed.set_image(url=book.image_link)
+    embed.set_thumbnail(url=book.author_img)
+
+    return embed # Send the embed with some text
+
 def pascal_case(input_str):
     words = input_str.split()
     capitalized_words = [word.capitalize() for word in words]
     return ' '.join(capitalized_words)
 
-def formatAuthor(authors):
-    formattedAutors = []
-    for author in authors:
-        formattedAutors.append("[{}]({})".format(author.name, author.link))    
-    return ", ".join(formattedAutors)
+def formatBookItemList(items):
+    formattedItems = []
+    for item in items:
+        formattedItems.append("[{}]({})".format(item.name, item.link))    
+    return ", ".join(formattedItems)
 
 @bot.event
 async def on_ready():
@@ -902,12 +935,15 @@ async def on_message(message: discord.message):
         return
 
     if message.content.startswith(("https://www.goodreads.com/book/show/", "https://goodreads.com/book/show/")) :
-        
         book_url = message.content.split()[0]
-
-        embed = await getBook(book_url)
-
-        
+        embed = await getGoodreadsBook(book_url)        
+        if embed:
+            await message.channel.send(embed=embed, reference=message.to_reference())
+            await message.edit(suppress = True)
+    
+    if message.content.startswith(("https://www.royalroad.com/fiction/", "https://royalroad.com/fiction/")) :
+        book_url = message.content.split()[0]
+        embed = await getRoyalRoadBook("/".join(book_url.split('/')[:6])) #fixes the url format
         if embed:
             await message.channel.send(embed=embed, reference=message.to_reference())
             await message.edit(suppress = True)
