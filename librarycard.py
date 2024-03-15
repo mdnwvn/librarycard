@@ -1,11 +1,12 @@
 import discord
+import lib.goodreads as goodreads
 import os
 from dotenv import load_dotenv
 import typing
 import pymongo
 from bson.objectid import ObjectId
 import math
-from discord.ext.pages import Paginator, Page
+from discord.ext.pages import Paginator
 from pymongo import TEXT
 from pymongo import ASCENDING, DESCENDING
 from datetime import datetime
@@ -29,8 +30,7 @@ nominateSessions.create_index([('nominations.name', ASCENDING)])
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = discord.Bot()
-
+bot = discord.Bot(intents=intents)
 
 @bot.slash_command(name="addbook", description = "Add a book to your Flight's library")
 @guild_only()
@@ -853,14 +853,63 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
   pagination = Paginator(pages=pages)
   await pagination.respond(ctx.interaction, ephemeral=True)
 
+async def getBook(book_url):
+    book = await goodreads.getBook(book_url)
+    if not book:
+        return;
+    
+    embed = discord.Embed(
+        title=book.full_title,
+        url=book_url,
+        description=book.description,
+        color=discord.Colour.blurple(), # Pycord provides a class with default colors you can choose from
+    )
+    
+    if book.series:
+        embed.add_field(name="Series", value="[{}]({})".format(book.series, book.series_link), inline=False)    
+    
+    embed.add_field(name="Title", value="[{}]({})".format(book.title, book_url), inline=False)
+    embed.add_field(name="Author(s)", value=formatAuthor(book.authors), inline=True)
+    embed.add_field(name="Rating", value= ":star: " + book.rating, inline=True)
+    # embed.add_field(name="Inline Field 3", value="Inline Field 3", inline=True)
+ 
+    # embed.set_footer(text="The Awesome Lu Parser :3") # footers can have icons too
+    embed.set_author(name="Goodreads / Library Card", icon_url="https://www.goodreads.com/favicon.ico")
+    # embed.set_thumbnail(url="https://example.com/link-to-my-thumbnail.png")
+    embed.set_image(url=book.image_link)
+
+    return embed # Send the embed with some text
 
 def pascal_case(input_str):
     words = input_str.split()
     capitalized_words = [word.capitalize() for word in words]
     return ' '.join(capitalized_words)
 
+def formatAuthor(authors):
+    formattedAutors = []
+    for author in authors:
+        formattedAutors.append("[{}]({})".format(author.name, author.link))    
+    return ", ".join(formattedAutors)
 
 @bot.event
 async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="dragons!"))
+
+@bot.event
+async def on_message(message: discord.message):
+    # so the bot wont respond itself
+    if message.author == bot.user:
+        return
+
+    if message.content.startswith(("https://www.goodreads.com/book/show/", "https://goodreads.com/book/show/")) :
+        
+        book_url = message.content.split()[0]
+
+        embed = await getBook(book_url)
+
+        
+        if embed:
+            await message.channel.send(embed=embed, reference=message.to_reference())
+            await message.edit(suppress = True)
+
 bot.run(os.getenv('TOKEN'))
