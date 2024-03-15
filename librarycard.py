@@ -6,13 +6,12 @@ import typing
 import pymongo
 from bson.objectid import ObjectId
 import math
-from discord.ext.pages import Paginator, Page
+from discord.ext.pages import Paginator
 from pymongo import TEXT
 from pymongo import ASCENDING, DESCENDING
 from datetime import datetime
 from discord import Option, default_permissions
 from discord import guild_only
-import asyncio
 
 
 load_dotenv()
@@ -854,8 +853,7 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
   pagination = Paginator(pages=pages)
   await pagination.respond(ctx.interaction, ephemeral=True)
 
-async def getBook(book_url):    
-    print ('finding book')
+async def getBook(book_url):
     book = await goodreads.getBook(book_url)
     if not book:
         return;

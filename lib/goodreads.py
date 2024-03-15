@@ -1,5 +1,3 @@
-from urllib.request import urlopen
-import urllib.request, urllib.error
 from bs4 import BeautifulSoup
 import aiohttp
 
