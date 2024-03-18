@@ -21,7 +21,10 @@ class Tag:
     name=""
     link=""
 
-
+def urlToAbsolute(url):
+    if url.startswith("/"):
+        return "https://www.royalroad.com" + url
+    return url
 
 async def getBook(book_url):
     url_to_scrape = book_url
@@ -62,8 +65,8 @@ async def getBook(book_url):
             
             # get book author
             book.author = html_soup.find("meta", attrs={"property": "books:author"})["content"]
-            book.author_link = "https://www.royalroad.com" + title_node.find("a")["href"]
-            book.author_img = "https://www.royalroad.com" + html_soup.find("div", attrs={"class": "portlet-body"}).find("img")["src"]
+            book.author_link = urlToAbsolute(title_node.find("a")["href"])
+            book.author_img = urlToAbsolute(html_soup.find("div", attrs={"class": "portlet-body"}).find("img")["src"])
             
             # get tag list
             book_tags_list = fiction_info_node.find("span", attrs={"class": "tags"})
@@ -72,12 +75,12 @@ async def getBook(book_url):
             for contributor in book_tags_list.find_all('a'):
                 tag = Tag()
                 tag.name = contributor.get_text()
-                tag.link = "https://www.royalroad.com" + contributor["href"]
+                tag.link = urlToAbsolute(contributor["href"])
                 book.tags.append(tag)
             # do interaction here for many authors
 
             # get book image
-            book.image_link = html_soup.find("meta", attrs={"property": "og:image"})["content"]
+            book.image_link = urlToAbsolute(html_soup.find("meta", attrs={"property": "og:image"})["content"])
             # get book description
             book.description = html_soup.find("meta", attrs={"property": "og:description"})["content"]
             # get book rating
