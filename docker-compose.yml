@@ -1,0 +1,26 @@
+version: "3.1"
+
+services:
+  library-card:
+    build:
+      context: .
+    networks:
+      - lan
+    restart: unless-stopped
+    environment:
+      MONGO_STRING: "mongodb://mongo:27017/"
+
+  mongodb:
+    image: mongo
+    hostname: mongo
+    domainname: mongo
+    restart: unless-stopped
+    networks:
+      - lan
+
+volumes:
+  mongo:
+
+networks:
+  lan:
+    attachable: true

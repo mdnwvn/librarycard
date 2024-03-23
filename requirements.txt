@@ -1,0 +1,5 @@
+aiohttp
+beautifulsoup4
+py-cord == 2.4.1  # 2.5.0 has a bug right now, bump later?
+pymongo
+python-dotenv
