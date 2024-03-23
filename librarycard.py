@@ -40,7 +40,7 @@ async def addBook(ctx, book: str):
 
   search = {
     'name': book,
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
   }
   found = books.find(search).limit(10)
 
@@ -54,7 +54,7 @@ async def addBook(ctx, book: str):
     
   document = {
     'name': book.strip(),
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     'added': datetime.now(),
     'readers': []
   }
@@ -71,7 +71,7 @@ async def delBook(ctx, book: str):
 
   search = {
     'name': book,
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
   }
   projection ={
     'readers': 0
@@ -111,7 +111,7 @@ async def delBookById(ctx, id: str):
 
   search = {
     "_id": ObjectId(id),
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
   }
   result = books.delete_one(search)
   if result.acknowledged:
@@ -123,14 +123,14 @@ async def delBookById(ctx, id: str):
 @guild_only()
 async def library(ctx):
 
-  count = books.count_documents({'guild': ctx.guild.id})
+  count = books.count_documents({'guild': ctx.guild_id})
   pagecount = math.ceil((count/10))
 
   pages = []
 
   for p in range(pagecount):
     search = {
-      'guild': ctx.guild.id
+      'guild': ctx.guild_id
     }
     found = books.find(search).sort([('added', DESCENDING)]).limit(10).skip((p) * 10)
 
@@ -155,7 +155,7 @@ async def unopened(ctx):
   countpipeline = [ 
 
     { '$match': {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     }}, {
       '$project': {
 
@@ -198,7 +198,7 @@ async def unopened(ctx):
     searchPipeline = [ 
 
     { '$match': {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     }}, 
     {
         '$sort': {
@@ -251,7 +251,7 @@ async def unopened(ctx):
 async def readBook(ctx, book: str):
   searchpipeline = [ 
     { '$match': {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     }}, {
       '$project': {
 
@@ -294,7 +294,7 @@ async def readBook(ctx, book: str):
 
   existingsearchpipeline = [ 
     { '$match': {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     'readers.user': ctx.author.id,
     }}, {
       '$project': {
@@ -325,13 +325,13 @@ async def readBook(ctx, book: str):
 
   search = {
     '_id': foundbook['_id'],
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
   }
 
   readerobject = {
     'read': datetime.now(),
     'user': ctx.author.id,
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
   }
   result = books.update_one(search, {
     '$push': {
@@ -350,7 +350,7 @@ async def readBook(ctx, book: str):
 async def forgetBook(ctx, book:str):
   existingsearchpipeline = [ 
     { '$match': {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     'readers.user': ctx.author.id,
     }}, {
       '$project': {
@@ -389,7 +389,7 @@ async def forgetBook(ctx, book:str):
     await ctx.respond(embed=embed)
     return
 
-  search = { '_id': existingbook['_id'],'guild': ctx.guild.id,}
+  search = { '_id': existingbook['_id'],'guild': ctx.guild_id,}
   update = {
           '$pull': {
             'readers': {
@@ -423,7 +423,7 @@ async def hoard(ctx, user: typing.Optional[discord.Member]):
 
 
   search = {
-      'guild': ctx.guild.id,
+      'guild': ctx.guild_id,
       'readers.user': userid,
       }
 
@@ -438,7 +438,7 @@ async def hoard(ctx, user: typing.Optional[discord.Member]):
       {
       '$match': {
             
-            'guild': ctx.guild.id,
+            'guild': ctx.guild_id,
             'readers.user': userid,
             
           }
@@ -485,7 +485,7 @@ async def hoard(ctx, user: typing.Optional[discord.Member]):
 @guild_only()
 async def leaderboard(ctx):
   countpipeline = [
-      {'$match': {'guild': ctx.guild.id}},
+      {'$match': {'guild': ctx.guild_id}},
       {'$unwind': {'path': '$readers'}}, 
       {'$replaceRoot': {'newRoot': '$readers'}}, 
       {
@@ -514,7 +514,7 @@ async def leaderboard(ctx):
 
   for p in range(pagecount):
     pipeline = [
-      {'$match': {'guild': ctx.guild.id}},
+      {'$match': {'guild': ctx.guild_id}},
       {'$unwind': {'path': '$readers'}}, 
       {'$replaceRoot': {'newRoot': '$readers'}}, 
       {
@@ -553,7 +553,7 @@ async def leaderboard(ctx):
 @default_permissions(manage_messages=True)
 async def startSession(ctx):
   search = {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     'ended': {'$exists': False}
   }
 
@@ -564,7 +564,7 @@ async def startSession(ctx):
     return
   
   document = {
-  'guild': ctx.guild.id,
+  'guild': ctx.guild_id,
   'added': datetime.now(),
   'user': ctx.author.id,
   'nominations': []
@@ -580,7 +580,7 @@ async def startSession(ctx):
 @default_permissions(manage_messages=True)
 async def endSession(ctx):
   search = {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     'ended': {'$exists': False}
   }
 
@@ -607,7 +607,7 @@ async def endSession(ctx):
 async def addNomination(ctx, book: str):
   book = pascal_case(str.strip(book))
   search = {
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
     'ended': {'$exists': False}
   }
 
@@ -620,7 +620,7 @@ async def addNomination(ctx, book: str):
   existingNominationSearchPipeline = [
     {
         '$match': {
-            'guild': ctx.guild.id, 
+            'guild': ctx.guild_id, 
             'ended': {
                 '$exists': False
             }
@@ -661,7 +661,7 @@ async def addNomination(ctx, book: str):
   existingBookSearchPipeline = [
     {
         '$match': {
-            'guild': ctx.guild.id
+            'guild': ctx.guild_id
         }
     }, {
         '$project': {
@@ -689,7 +689,7 @@ async def addNomination(ctx, book: str):
   foundSession = nominateSessions.find_one(search)
   search = {
     '_id': foundSession['_id'],
-    'guild': ctx.guild.id,
+    'guild': ctx.guild_id,
   }
   
   readerobject = {
@@ -719,7 +719,7 @@ async def drawNominees(
   search = [
     {
         '$match': {
-            'guild': ctx.guild.id
+            'guild': ctx.guild_id
         }
     }, {
         '$sort': {
@@ -768,7 +768,7 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
   search_count = [
     {
         '$match': {
-            'guild': ctx.guild.id
+            'guild': ctx.guild_id
         }
     }, {
         '$sort': {
@@ -796,7 +796,7 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
   search = [
     {
         '$match': {
-            'guild': ctx.guild.id
+            'guild': ctx.guild_id
         }
     }, {
         '$sort': {
