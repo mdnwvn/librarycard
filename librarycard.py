@@ -1,4 +1,5 @@
 import discord
+import itertools
 import lib.goodreads as goodreads
 import lib.royalroad as royalroad
 import os
@@ -830,7 +831,8 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
 
   found = nominateSessions.aggregate(search)
 
-  pagecount = math.ceil((count/10))
+  page_size = 10
+  pagecount = math.ceil((count/page_size))
 
   pages = []
 
@@ -839,7 +841,7 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
     itemList = ""
     bookCount = 1
 
-    for b in found:
+    for b in itertools.islice(found, page_size):
       itemList += "\n{}. {}".format(bookCount, pascal_case(str(b['_id'])))
       bookCount += 1
       
