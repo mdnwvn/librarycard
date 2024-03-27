@@ -833,16 +833,16 @@ async def listNominations(ctx, past_sessions: Option(int, "How many prior sessio
 
   page_size = 10
   pagecount = math.ceil((count/page_size))
+  bookCount = 1
 
   pages = []
 
   for p in range(pagecount):
     embed = discord.Embed(title="Book Nomination", description= str(count) + " books currently nominated" )
     itemList = ""
-    bookCount = 1
 
     for b in itertools.islice(found, page_size):
-      itemList += "\n{}. {}".format(bookCount + (p * 10), pascal_case(str(b['_id'])))
+      itemList += "\n{}. {}".format(bookCount, pascal_case(str(b['_id'])))
       bookCount += 1
       
     embed.add_field(name='Current Nominated Books', value=itemList, inline=False)
